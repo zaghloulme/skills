@@ -41,13 +41,11 @@ To update later, run `npx skills@latest update`.
 | [`perfect-world`](skills/perfect-world/SKILL.md) | The "perfect world" doctrine: design and refactor so every rule is enforced at the layer that cannot forget it — schema constraints, route metadata, single chokepoints — instead of in a comment or a duplicated handler check. |
 | [`ai-engineering-guide`](skills/ai-engineering-guide/SKILL.md) | Guidelines for building AI agents, AI apps and LLM-powered systems: agent architecture, prompt engineering, RAG, security hardening, evaluation, model selection and orchestration. |
 
-### Craft & automation
+### Craft
 
 | Skill | What it does |
 | --- | --- |
 | [`dithered-visuals`](skills/dithered-visuals/SKILL.md) | Generate composition-ready imagery and transform it into restrained two-color Bayer 4×4 dither artwork. |
-| [`agent-desktop`](skills/agent-desktop/SKILL.md) | Drive a GUI desktop box — open browsers carrying shared logins, watch the screen, click and type like a human. |
-| [`thermal-daily-todos`](skills/thermal-daily-todos/SKILL.md) | Compile a daily work plan from your tasks, categorise it cleanly, and print it to a 72 mm thermal printer via ESC/POS. |
 
 ## Repository layout
 
@@ -62,4 +60,4 @@ Skills live under `skills/<name>/`, the layout `npx skills` discovers automatica
 
 ## Licence
 
-Each skill is licensed as declared in its own front matter. Unless stated otherwise, everything here is MIT.
+Everything here is [MIT](LICENSE), except `millionfold` and `millionfold-evolved`, which are proprietary — their front matter declares `license: Proprietary`. Each skill's own `SKILL.md` is authoritative.
