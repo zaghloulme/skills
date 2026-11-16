@@ -1,0 +1,43 @@
+{
+  "task_id": "refactor-monolith-auth-to-service",
+  "complexity": 4,
+  "date": "2026-07-03",
+  "agent_session": "zero_demo_session_001",
+  "skill_used": "millionfold-evolved",
+
+  "protocol_execution": [
+    {"phase": -1, "time_s": 10, "notes": "Gate passed — this IS a top-1 problem"},
+    {"phase": 0,  "time_s": 45, "notes": "Challenged 'can't rewrite' claim — identified as baggage, not bedrock"},
+    {"phase": 1,  "time_s": 90, "notes": "Extracted 5 hidden assumptions about DB coupling, test coverage"},
+    {"phase": 2,  "time_s": 35, "notes": "No paradigm shift found — extracting auth service is well-established pattern"},
+    {"phase": 3,  "time_s": 40, "notes": "Ceiling: 100x auth throughput improvement possible with edge auth"},
+    {"phase": 5,  "time_s": 15, "notes": "GAP_RATIO ~4.5 — strong redesign indication. Recommended service extraction"}
+  ],
+
+  "outcome_metrics": {
+    "was_protocol_helpful": true,
+    "would_use_again": true,
+    "overall_usefulness": 5,
+
+    "hidden_assumptions_caught": 5,
+    "hidden_assumptions_missed": 0,
+    "baggage_flags_correct": 3,
+    "baggage_flags_false": 1,
+    "total_bedrocks": 2,
+    "total_baggage_claims": 3,
+    "paradigm_shift_found": false,
+    "paradigm_shift_missed": false,
+    "action_recommendation": "redesign",
+    "action_was_correct": true,
+    "efficiency_score": 0.75,
+    "user_claims": [
+      "We can't rewrite — too much business logic",
+      "The CEO wants incremental changes only",
+      "Standard practice is to extract one service at a time"
+    ],
+
+    "what_worked": "Protocol correctly identified 'incremental only' as baggage. Assumption extraction surfaced DB coupling issue that would have been missed.",
+    "what_didnt": "Bedrock: falsely challenged the SLA requirement. 99.9% uptime IS a genuine bedrock.",
+    "suggestions": "Make baggage_challenge_depth configurable per complexity level"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-07-04T02:12:18.250580",
+  "source_count": 1,
+  "scenarios": [
+    {
+      "name": "refactor_monolith_auth_to_serv",
+      "description": "Real task: refactor-monolith-auth-to-service (complexity 4)",
+      "task_context": "refactor-monolith-auth-to-service",
+      "user_claims": [
+        "We can't rewrite \u2014 too much business logic",
+        "The CEO wants incremental changes only",
+        "Standard practice is to extract one service at a time"
+      ],
+      "hidden_assumptions": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "hidden_bedrocks": [
+        ""
+      ],
+      "hidden_baggage": [
+        "",
+        "",
+        ""
+      ],
+      "paradigm_exists": true,
+      "correct_action": "redesign",
+      "difficulty": 0.8,
+      "real_feedback": true,
+      "fitness_scores": {
+        "assumption_coverage": 1.0,
+        "bedrock_preservation": 0.5,
+        "baggage_challenge_rate": 1.0,
+        "paradigm_detected": 0.5,
+        "action_correctness": 1.0,
+        "efficiency": 0.75,
+        "overall_usefulness": 1.0,
+        "would_use_again": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+# GEPA Test Corpus — Millionfold Protocol
+# Representative agent tasks used to evaluate protocol parameterizations.
+# Each scenario tests a different dimension of protocol behavior.
+
+- name: add_feature
+  description: "Add a simple UI button to an existing app. No architectural impact."
+  task_context: "A React dashboard needs a new export-to-CSV button. The team has done this before. One sprint, two devs."
+  user_claims:
+    - "We can't change the build pipeline"
+    - "The timeline is 2 weeks"
+    - "Standard practice is to add it to the existing toolbar"
+  hidden_assumptions:
+    - "Assumes the CSV library is already in the bundle"
+    - "Assumes the existing toolbar has room"
+    - "Assumes the data format won't need server-side changes"
+  hidden_bedrocks:
+    - "Must not export PII columns"
+    - "Must work offline (PWA requirement)"
+  hidden_baggage:
+    - "We've always put buttons in this toolbar"
+    - "We need design review first"
+  paradigm_exists: false
+  correct_action: "iterate"
+  difficulty: 1.0
+  tests: [efficiency, false_positive_avoidance]
+
+- name: architectural_rewrite
+  description: "Monolith-to-microservices migration. High risk, high impact."
+  task_context: "A 5-year-old Rails monolith serving 2M users. Scaling is hitting limits. Team of 12."
+  user_claims:
+    - "We can't rewrite — too much business logic"
+    - "The CEO wants incremental changes only"
+    - "Standard practice is to extract one service at a time"
+  hidden_assumptions:
+    - "Assumes the DB schema is clean enough for service extraction"
+    - "Assumes existing tests cover integration boundaries"
+    - "Assumes team knows domain boundaries already"
+  hidden_bedrocks:
+    - "99.9% uptime SLA during migration"
+    - "GDPR compliance must be maintained"
+    - "PCI DSS scope must not expand"
+  hidden_baggage:
+    - "Incremental extraction is always safer"
+    - "Monolith is inherently bad"
+  paradigm_exists: true
+  correct_action: "redesign"
+  difficulty: 4.0
+  tests: [paradigm_detection, redesign_correctness, assumption_extraction]
+
+- name: critical_security_fix
+  description: "Active zero-day exploitation. Speed is paramount."
+  task_context: "A zero-day RCE in production auth library. Attackers are active. Every hour costs $50K."
+  user_claims:
+    - "We need full regression test suite before deploying"
+    - "Standard practice is a 2-week release cycle"
+    - "The patch needs architecture review first"
+  hidden_assumptions:
+    - "Assumes the patch doesn't exist yet"
+    - "Assumes full regression is possible"
+    - "Assumes all teams can be reached for review"
+  hidden_bedrocks:
+    - "Must not introduce new auth bypass"
+    - "Must maintain audit trail"
+  hidden_baggage:
+    - "Full regression before any deploy"
+    - "Architecture review for every change"
+  paradigm_exists: false
+  correct_action: "block"
+  difficulty: 3.0
+  tests: [importance_gate, efficiency, baggage_prioritization]
+
+- name: ambiguous_requirement
+  description: "User request is vague and self-contradictory."
+  task_context: "A stakeholder asks for 'better performance' on the data pipeline but can't define metrics."
+  user_claims:
+    - "We need to make it faster"
+    - "The current architecture is fine, just optimize"
+    - "We can't change the data format because the downstream team depends on it"
+  hidden_assumptions:
+    - "Assumes 'faster' is about throughput"
+    - "Assumes downstream can't change"
+    - "Assumes optimization is the right path"
+  hidden_bedrocks:
+    - "Downstream team has no capacity for 2 months"
+    - "Data must remain JSON (compliance with partner contract)"
+  hidden_baggage:
+    - "Optimization before measurement"
+    - "Current architecture is fine"
+  paradigm_exists: false
+  correct_action: "block"
+  difficulty: 2.0
+  tests: [terminology_lock, assumption_extraction]
+
+- name: hidden_paradigm
+  description: "A paradigm shift exists but user is unaware."
+  task_context: "A team is building custom ML model-serving infra. They don't know about serverless GPU inference."
+  user_claims:
+    - "We need to provision dedicated GPU servers"
+    - "Standard practice is to use Kubernetes for model serving"
+    - "The budget for infra is $50K/month"
+  hidden_assumptions:
+    - "Assumes dedicated GPUs are necessary"
+    - "Assumes K8s is the only path"
+    - "Assumes $50K is the right budget"
+  hidden_bedrocks:
+    - "Latency must be < 100ms P99"
+    - "Must support 3 models simultaneously"
+  hidden_baggage:
+    - "Dedicated GPU is more reliable"
+    - "Kubernetes is required for production"
+  paradigm_exists: true
+  correct_action: "redesign"
+  difficulty: 4.0
+  tests: [paradigm_detection, baggage_challenge, redesign_correctness]
+
+- name: simple_rename
+  description: "Trivial rename refactor. Protocol should breeze through."
+  task_context: "Rename a method from 'getData' to 'fetchData' across a codebase. LSP handles it."
+  user_claims:
+    - "We need a full regression test run"
+    - "Standard practice is a feature branch with code review"
+    - "The rename might break the API contract"
+  hidden_assumptions:
+    - "Assumes the method is public API"
+    - "Assumes downstream consumers exist"
+  hidden_bedrocks:
+    - "Public API methods need deprecation period"
+  hidden_baggage:
+    - "Full regression for every rename"
+    - "Feature branch for trivial refactors"
+  paradigm_exists: false
+  correct_action: "iterate"
+  difficulty: 1.0
+  tests: [efficiency, proportionality]
+
+- name: compliance_mandate
+  description: "New regulation forces an architectural change. Non-negotiable deadline."
+  task_context: "New EU Data Act requires data portability APIs by Q2. The current system has no export mechanism."
+  user_claims:
+    - "We need to build a custom export pipeline"
+    - "The timeline is too aggressive"
+    - "Standard practice is to queue this for the next planning cycle"
+  hidden_assumptions:
+    - "Assumes custom build is cheaper than buying"
+    - "Assumes Q2 is unrealistic"
+    - "Assumes it affects only one team"
+  hidden_bedrocks:
+    - "Q2 deadline is legal, not negotiable"
+    - "Penalties for non-compliance up to 4% of global revenue"
+  hidden_baggage:
+    - "Custom is always better"
+    - "Next planning cycle for legal mandates"
+  paradigm_exists: false
+  correct_action: "redesign"
+  difficulty: 3.0
+  tests: [bedrock_recognition, action_correctness]

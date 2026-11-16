@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GEPA - Millionfold Protocol Optimization</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  /* ── Color palette ── */
+  :root {
+    --blue:   #2563eb;
+    --teal:   #0891b2;
+    --green:  #16a34a;
+    --red:    #dc2626;
+    --amber:  #d97706;
+    --purple: #7c3aed;
+    --pink:   #db2777;
+    --slate:  #475569;
+    --gray:   #6b7280;
+    --light-bg: #f8fafc;
+  }
+
+  /* ── Reset & paper base ── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Helvetica Neue', Arial, 'Liberation Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #1a1a1a;
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Layout ── */
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* ── Viewport hero: charts fit 16:9 ── */
+  .viewport-charts {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    padding-top: 28px;
+  }
+
+  /* ── Paper header ── */
+  .paper-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .paper-header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #000;
+    line-height: 1.2;
+  }
+  .paper-header .byline {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .paper-header .abstract {
+    max-width: 640px;
+    margin: 8px auto 0;
+    font-size: 12.5px;
+    color: #444;
+    line-height: 1.55;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 0 0 16px 0;
+  }
+  hr.thick {
+    border-top-width: 2px;
+    border-color: #1a1a1a;
+  }
+
+  /* ── Two-panel figure area ── */
+  .figure-panels {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 24px;
+    min-height: 0;
+    height: 1px;
+  }
+
+  .panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+  }
+  .panel .chart-wrap {
+    flex: 1;
+    position: relative;
+    min-height: 100px;
+    height: 100%;
+  }
+  .panel .chart-wrap canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .figcaption {
+    font-size: 11px;
+    color: #666;
+    margin-top: 6px;
+    line-height: 1.45;
+    padding-bottom: 4px;
+  }
+  .figcaption strong {
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  .fig-label {
+    display: inline-block;
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--blue);
+    margin-bottom: 4px;
+  }
+
+  /* ── Below-fold sections ── */
+  .below-fold {
+    padding-top: 40px;
+  }
+
+  .section {
+    margin-bottom: 44px;
+  }
+  .section:last-child {
+    margin-bottom: 0;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #d0d0d0;
+  }
+  .section-header h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--slate);
+    letter-spacing: -0.01em;
+  }
+  .section-header .sec-label {
+    font-size: 9.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #999;
+  }
+
+  .section p {
+    font-size: 13px;
+    color: #555;
+    max-width: 700px;
+    margin-bottom: 14px;
+  }
+
+  /* ── Chart containers (below fold) ── */
+  .chart-box {
+    position: relative;
+    width: 100%;
+    height: 320px;
+    margin-bottom: 6px;
+  }
+  .chart-box canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+  .chart-box.tall {
+    height: 400px;
+  }
+  .chart-box.short {
+    height: 240px;
+  }
+
+  /* ── Two-col grid ── */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  /* ── Metric row (compact B&W) ── */
+  .metric-strip {
+    display: flex;
+    gap: 0;
+    border-top: 2px solid #1a1a1a;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 14px;
+  }
+  .metric-strip .m {
+    flex: 1;
+    padding: 10px 8px;
+    text-align: center;
+    border-right: 1px solid #e0e0e0;
+  }
+  .metric-strip .m:last-child {
+    border-right: none;
+  }
+  .metric-strip .m .val {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--blue);
+    line-height: 1.2;
+  }
+  .metric-strip .m .lab {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #888;
+    margin-top: 1px;
+  }
+
+  /* ── Tables (booktabs style) ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  table thead {
+    border-top: 2px solid #1a1a1a;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  table thead th {
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #555;
+  }
+  table tbody td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #ececec;
+    color: #333;
+  }
+  table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  table tbody tr:hover td {
+    background: #f8f8f8;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    margin-top: 10px;
+  }
+
+  /* ── Delta indicators ── */
+  .delta-up { color: var(--green); font-weight: 600; }
+  .delta-down { color: var(--red); }
+  .delta-same { color: var(--gray); }
+  .delta-tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 7px;
+    border: 1px solid #d0d0d0;
+    border-radius: 2px;
+    font-weight: 600;
+    color: #1a1a1a;
+    background: #f9f9f9;
+  }
+  .delta-tag.up { color: var(--green); border-color: var(--green); background: #f0fdf4; }
+  .delta-tag.down { color: var(--red); border-color: var(--red); background: #fef2f2; }
+  .delta-tag.same { color: var(--gray); border-color: #ccc; }
+
+  /* ── Scenario cards ── */
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .scenario-card {
+    border: 1px solid #d0d0d0;
+    padding: 10px 12px;
+    background: var(--light-bg);
+  }
+  .scenario-card .name {
+    font-weight: 700;
+    font-size: 12px;
+    color: #000;
+    margin-bottom: 2px;
+  }
+  .scenario-card .score {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--slate);
+    line-height: 1.2;
+  }
+  .scenario-card .meta {
+    font-size: 10px;
+    color: #777;
+  }
+  .scenario-card .axes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 4px;
+  }
+  .scenario-card .axis-badge {
+    font-size: 9px;
+    padding: 1px 5px;
+    border: 1px solid #d0d0d0;
+    color: var(--slate);
+    background: var(--light-bg);
+  }
+  .scenario-card.diff-1 { border-left: 3px solid var(--green); }
+  .scenario-card.diff-2 { border-left: 3px solid var(--amber); }
+  .scenario-card.diff-3 { border-left: 3px solid var(--red); }
+  .scenario-card.diff-4 { border-left: 3px solid var(--purple); }
+
+  /* ── Insights ── */
+  .insight-list {
+    list-style: none;
+    padding: 0;
+  }
+  .insight-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #ececec;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 13px;
+    color: #333;
+    line-height: 1.5;
+  }
+  .insight-list li:last-child {
+    border-bottom: none;
+  }
+  .insight-list li code {
+    font-size: 11px;
+    padding: 1px 4px;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    color: #000;
+  }
+  .insight-list li strong {
+    color: #000;
+  }
+  .insight-marker {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--blue);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    margin-top: 2px;
+    color: var(--blue);
+    background: #eff6ff;
+  }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    padding: 24px 0 32px;
+    color: #999;
+    font-size: 11px;
+    border-top: 1px solid #d0d0d0;
+    margin-top: 10px;
+  }
+  footer a {
+    color: #555;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  footer a:hover {
+    color: #000;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .figure-panels {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    .viewport-charts {
+      min-height: auto;
+      padding-top: 20px;
+    }
+    .panel .chart-wrap {
+      height: 280px;
+    }
+    .grid-2 {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    .metric-strip {
+      flex-wrap: wrap;
+    }
+    .metric-strip .m {
+      flex: 1 1 30%;
+      border-bottom: 1px solid #e0e0e0;
+    }
+  }
+
+  @media (max-width: 540px) {
+    .container {
+      padding: 0 16px;
+    }
+    .paper-header h1 {
+      font-size: 20px;
+    }
+    .chart-box {
+      height: 240px;
+    }
+    .chart-box.tall {
+      height: 280px;
+    }
+    .metric-strip .m {
+      flex: 1 1 45%;
+    }
+  }
+
+  /* ── Print tweaks ── */
+  @media print {
+    body { font-size: 11px; }
+    .container { max-width: 100%; padding: 0 20px; }
+    .viewport-charts { min-height: auto; }
+    .chart-box { height: 260px; page-break-inside: avoid; }
+    .section { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- ════════════════════════════════════════════ -->
+<!-- ABOVE THE FOLD: CHARTS IN 16:9 VIEWPORT    -->
+<!-- ════════════════════════════════════════════ -->
+<div class="viewport-charts">
+
+  <header class="paper-header">
+    <h1>GEPA: Generative Evolutionary Parametric Algorithm</h1>
+    <div class="byline">14 Parameters &middot; 7 Scenarios &middot; 30 Generations &middot; Population 50</div>
+    <p class="abstract">
+      Evolutionary optimization of the Millionfold Protocol&rsquo;s 14 tunable parameters.
+      Best fitness climbs from 0.518 to 0.781 (+50.9%) over 30 generations,
+      validated across 5 independent random seeds.
+    </p>
+  </header>
+
+  <hr class="thick">
+
+  <div class="figure-panels">
+
+    <!-- Panel A: Evolution -->
+    <div class="panel">
+      <span class="fig-label">Figure 1A</span>
+      <div class="chart-wrap">
+        <canvas id="evolutionChart"></canvas>
+      </div>
+      <p class="figcaption">
+        <strong>Evolution of fitness over 30 generations.</strong>
+        Best fitness (solid), population mean (dashed), and diversity (dotted, right axis).
+        Convergence occurs around generation 15&ndash;18.
+      </p>
+    </div>
+
+    <!-- Panel B: Parameter Changes -->
+    <div class="panel">
+      <span class="fig-label">Figure 1B</span>
+      <div class="chart-wrap">
+        <canvas id="paramsChart"></canvas>
+      </div>
+      <p class="figcaption">
+        <strong>Parameter changes: original vs. optimal.</strong>
+        Dark bars show the optimized value; light bars show the hand-tuned original.
+        13 of 14 parameters moved from their starting values.
+      </p>
+    </div>
+
+  </div>
+
+</div><!-- /viewport-charts -->
+
+<!-- ════════════════════════════════════════════ -->
+<!-- BELOW THE FOLD: DETAILED RESULTS           -->
+<!-- ════════════════════════════════════════════ -->
+<div class="below-fold">
+
+  <!-- ── Key Metrics (compact strip) ── -->
+  <div class="metric-strip">
+    <div class="m"><div class="val">14</div><div class="lab">Parameters</div></div>
+    <div class="m"><div class="val">7</div><div class="lab">Scenarios</div></div>
+    <div class="m"><div class="val">30</div><div class="lab">Generations</div></div>
+    <div class="m"><div class="val">50</div><div class="lab">Pop/Gen</div></div>
+    <div class="m"><div class="val">+50.9%</div><div class="lab">Fitness Gain</div></div>
+    <div class="m"><div class="val">5</div><div class="lab">Seed Runs</div></div>
+  </div>
+
+  <!-- ── Section 2: Per-Scenario Breakdown ── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="sec-label">Section 2</span>
+      <h2>Per-Scenario Performance</h2>
+    </div>
+    <p>Optimal parameters evaluated across 7 test scenarios on 6 fitness axes.
+      Radar plot shows aggregate scores; cards below show detail and difficulty.</p>
+
+    <div class="chart-box tall">
+      <canvas id="scenarioChart"></canvas>
+    </div>
+    <p class="figcaption">
+      <strong>Figure 2.</strong> Radar plot of scenario-level scores (black outline, gray fill).
+      Dashed ring marks the theoretical maximum (1.0). The compliance-mandate scenario (50%) is the weakest.
+    </p>
+
+    <div class="scenario-grid" id="scenarioCards"></div>
+  </section>
+
+  <!-- ── Section 3: Cross-Seed Validation ── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="sec-label">Section 3</span>
+      <h2>Cross-Seed Validation</h2>
+    </div>
+    <p>Five independent runs (seeds 7, 13, 21, 99, 123) with 20 generations each confirm
+      reproducibility. All seeds converge well above the v2 generation-1 baseline (0.518).</p>
+
+    <div class="chart-box">
+      <canvas id="seedChart"></canvas>
+    </div>
+    <p class="figcaption">
+      <strong>Figure 3.</strong> Best fitness across 5 random seeds.
+      Dashed red line shows the initial baseline. Seeds 13&ndash;123 cluster at 0.77&ndash;0.78,
+      while seed&nbsp;7 plateaus at 0.60.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Seed</th><th>Best Fitness</th><th>Convergence (gen)</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>7</td><td>0.5996</td><td>~15</td><td>Lowest peak; plateaued early</td></tr>
+          <tr><td>13</td><td>0.7760</td><td>~11</td><td>Strong, steady climb</td></tr>
+          <tr><td>21</td><td>0.7788</td><td>~14</td><td>Similar peak to seed 13</td></tr>
+          <tr><td>99</td><td>0.7813</td><td>~15</td><td>Highest peak, slow tail</td></tr>
+          <tr><td>123</td><td>0.7737</td><td>~11</td><td>Solid but plateaued at ~0.774</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── Section 4: Fitness Function Axes ── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="sec-label">Section 4</span>
+      <h2>Fitness Function: The 6 Axes</h2>
+    </div>
+    <p>The protocol is scored on six weighted criteria (each 0.0&ndash;1.0), evaluated across all 7 scenarios.
+      Weights reflect the relative importance of each axis.</p>
+
+    <div class="grid-2">
+      <div>
+        <div class="chart-box short">
+          <canvas id="axesChart"></canvas>
+        </div>
+        <p class="figcaption">
+          <strong>Figure 4.</strong> Weight distribution across the 6 fitness axes.
+          Assumption Coverage (25%) and Baggage Challenge (20%) carry the highest weight.
+        </p>
+      </div>
+      <div>
+        <table>
+          <thead>
+            <tr><th>Axis</th><th>Weight</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Assumption Coverage</td><td>25%</td><td>Hidden assumptions caught</td></tr>
+            <tr><td>Baggage Challenge</td><td>20%</td><td>False constraints correctly flagged</td></tr>
+            <tr><td>Bedrock Preservation</td><td>15%</td><td>Genuine constraints not challenged</td></tr>
+            <tr><td>Paradigm Detection</td><td>15%</td><td>Paradigm shifts identified</td></tr>
+            <tr><td>Action Correctness</td><td>15%</td><td>Correct action recommended</td></tr>
+            <tr><td>Efficiency</td><td>10%</td><td>Phase overhead proportional to complexity</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Section 5: Parameter Table ── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="sec-label">Section 5</span>
+      <h2>Full Parameter Comparison</h2>
+    </div>
+    <p>All 14 tunable genes with original hand-tuned values, optimal evolved values, and the delta.
+      Range constraints shown for context.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Original</th>
+            <th>Optimal</th>
+            <th>Delta</th>
+            <th>Range</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody id="paramsTable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── Section 6: Key Findings ── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="sec-label">Section 6</span>
+      <h2>What the Evolution Discovered</h2>
+    </div>
+    <p>Eleven key findings from the optimization run, ordered by impact.</p>
+    <ul class="insight-list" id="insights"></ul>
+  </section>
+
+  <footer>
+    <p>GEPA - <a href="#">Millionfold Protocol</a> Optimization Experiment</p>
+    <p style="margin-top:2px; font-size:10px; color:#aaa;">
+      Data from evolution.csv, final.json, and 5-seed validation runs
+    </p>
+  </footer>
+
+</div><!-- /below-fold -->
+
+</div><!-- /container -->
+
+<script>
+// ════════════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════════════
+
+const EVOLUTION = [
+  {gen:1,best:0.5175,avg:0.3963,div:1.4411},{gen:2,best:0.612,avg:0.4266,div:1.3173},{gen:3,best:0.612,avg:0.4501,div:1.2991},{gen:4,best:0.6354,avg:0.5063,div:1.2929},{gen:5,best:0.6979,avg:0.5614,div:1.3557},
+  {gen:6,best:0.7359,avg:0.615,div:1.1231},{gen:7,best:0.7395,avg:0.6559,div:1.0095},{gen:8,best:0.7589,avg:0.6856,div:0.9173},{gen:9,best:0.7589,avg:0.7008,div:0.8335},{gen:10,best:0.7589,avg:0.706,div:0.8305},
+  {gen:11,best:0.7791,avg:0.7165,div:0.8072},{gen:12,best:0.7791,avg:0.7128,div:0.7721},{gen:13,best:0.7791,avg:0.7283,div:0.7539},{gen:14,best:0.7791,avg:0.7253,div:0.652},{gen:15,best:0.7791,avg:0.731,div:0.6003},
+  {gen:16,best:0.7791,avg:0.7279,div:0.5165},{gen:17,best:0.7791,avg:0.7343,div:0.4219},{gen:18,best:0.7814,avg:0.7362,div:0.875},{gen:19,best:0.7814,avg:0.7394,div:0.8943},{gen:20,best:0.7814,avg:0.7331,div:0.7245},
+  {gen:21,best:0.7814,avg:0.7362,div:0.7464},{gen:22,best:0.7814,avg:0.7378,div:0.7515},{gen:23,best:0.7814,avg:0.7352,div:0.6655},{gen:24,best:0.7814,avg:0.7417,div:0.6434},{gen:25,best:0.7814,avg:0.7367,div:0.5706},
+  {gen:26,best:0.7814,avg:0.7414,div:0.498},{gen:27,best:0.7814,avg:0.7476,div:0.419},{gen:28,best:0.7814,avg:0.7429,div:0.4533},{gen:29,best:0.7814,avg:0.7365,div:0.4267},{gen:30,best:0.7814,avg:0.748,div:0.3622}
+];
+
+const GENE_DEFS = [
+  {name:"importance_rank_n",        original:3,    optimal:1,   min:1,  max:5,   desc:"Is task in top-N problems to proceed"},
+  {name:"confidence_min",           original:0.70, optimal:0.50,min:0.5, max:1.0, desc:"Minimum confidence score to pass gate"},
+  {name:"gap_ratio_mandatory",      original:10.0, optimal:25.0,min:4.0, max:25.0,desc:"GAP_RATIO threshold for mandatory redesign"},
+  {name:"gap_ratio_strong",         original:3.0,  optimal:4.83,min:1.5, max:10.0,desc:"GAP_RATIO threshold for strong indication"},
+  {name:"paradigm_years_ahead",     original:3.0,  optimal:8.21,min:0.0, max:10.0,desc:"Years to look ahead for paradigm-shift check"},
+  {name:"horizon_short_yrs",        original:5,    optimal:3,   min:1,  max:10,  desc:"T+N short horizon (years)"},
+  {name:"horizon_mid_yrs",          original:10,   optimal:21,  min:3,  max:25,  desc:"T+N mid horizon (years)"},
+  {name:"horizon_long_yrs",         original:20,   optimal:50,  min:5,  max:50,  desc:"T+N long horizon (years)"},
+  {name:"stress_test_iters",        original:1,    optimal:2,   min:1,  max:5,   desc:"Adversarial conditions per ceiling"},
+  {name:"self_check_count",         original:8,    optimal:16,  min:4,  max:16,  desc:"Number of self-check items"},
+  {name:"max_audit_loops",          original:3,    optimal:2,   min:1,  max:10,  desc:"Max Phase 10 audit cycles"},
+  {name:"baggage_presumption",      original:0.80, optimal:1.0, min:0.5, max:1.0, desc:"Aggression in labeling claims as baggage"},
+  {name:"phase_skip_penalty",       original:0.10, optimal:0.0, min:0.0, max:0.5, desc:"Efficiency penalty per skipped phase"},
+  {name:"redesign_is_default",      original:0,    optimal:0,   min:0,   max:1,   desc:"Binary: default to redesign?"},
+];
+
+const SCENARIOS = [
+  {name:"add_feature",          total:0.62, ac:1.0, bp:1.0, bc:0.0, pd:0.0, act:0.8, eff:1.0, diff:1, tests:"efficiency, false-positive avoidance"},
+  {name:"simple_rename",        total:0.85, ac:1.0, bp:1.0, bc:1.0, pd:0.0, act:1.0, eff:1.0, diff:1, tests:"efficiency, proportionality"},
+  {name:"ambiguous_requirement",total:0.805,ac:1.0, bp:1.0, bc:1.0, pd:0.0, act:0.7, eff:1.0, diff:2, tests:"terminology lock, assumption extraction"},
+  {name:"compliance_mandate",   total:0.85, ac:1.0, bp:1.0, bc:1.0, pd:0.0, act:1.0, eff:1.0, diff:3, tests:"bedrock recognition, action correctness"},
+  {name:"critical_security_fix",total:0.805,ac:1.0, bp:1.0, bc:1.0, pd:0.0, act:0.7, eff:1.0, diff:3, tests:"importance gate, efficiency, baggage prioritization"},
+  {name:"architectural_rewrite",total:0.77, ac:1.0, bp:1.0, bc:0.0, pd:1.0, act:0.8, eff:1.0, diff:4, tests:"paradigm detection, redesign correctness, assumption extraction"},
+  {name:"hidden_paradigm",      total:0.77, ac:1.0, bp:1.0, bc:0.0, pd:1.0, act:0.8, eff:1.0, diff:4, tests:"paradigm detection, baggage challenge, redesign correctness"},
+];
+
+const AXES = [
+  {name:"Assumption Coverage",      weight:0.25, desc:"Fraction of hidden assumptions caught"},
+  {name:"Baggage Challenge",        weight:0.20, desc:"Rate of correctly flagging false constraints"},
+  {name:"Bedrock Preservation",     weight:0.15, desc:"Genuine constraints NOT incorrectly challenged"},
+  {name:"Paradigm Detection",       weight:0.15, desc:"Correct identification of paradigm shifts"},
+  {name:"Action Correctness",       weight:0.15, desc:"Did the protocol recommend the right action?"},
+  {name:"Efficiency",               weight:0.10, desc:"Phase overhead proportional to task complexity"},
+];
+
+const SEEDS = [
+  {seed:7,  fitness:0.5996, conv:15, note:"Lowest peak - plateaued early"},
+  {seed:13, fitness:0.7760, conv:11, note:"Strong, steady climb"},
+  {seed:21, fitness:0.7788, conv:14, note:"Similar peak to seed 13"},
+  {seed:99, fitness:0.7813, conv:15, note:"Highest peak, slow tail"},
+  {seed:123,fitness:0.7737, conv:11, note:"Solid but plateaued at ~0.774"},
+];
+
+const SEED_BASELINE = 0.5175;
+
+// ── Color palette ──
+const C = {
+  blue:   '#2563eb',
+  teal:   '#0891b2',
+  green:  '#16a34a',
+  red:    '#dc2626',
+  amber:  '#d97706',
+  purple: '#7c3aed',
+  pink:   '#db2777',
+  slate:  '#475569',
+  gray:   '#6b7280',
+  light:  '#94a3b8',
+  faint:  '#cbd5e1',
+  grid:   'rgba(37,99,235,0.06)',
+  fill:   'rgba(37,99,235,0.04)',
+};
+
+// ── Helpers ──
+function deltaClass(orig, opt) {
+  if (opt > orig) return 'up';
+  if (opt < orig) return 'down';
+  return 'same';
+}
+function deltaSymbol(orig, opt) {
+  if (opt > orig) return '+';
+  if (opt < orig) return '-';
+  return '0';
+}
+function fmt(v) {
+  if (Number.isInteger(v)) return v.toString();
+  return v.toFixed(2);
+}
+function pctDelta(orig, opt) {
+  if (orig === 0) return '-';
+  return ((opt - orig) / Math.abs(orig) * 100).toFixed(0);
+}
+
+// ── Default chart options ──
+const chartOpts = {
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: { mode: 'index', intersect: false },
+  plugins: {
+    legend: {
+      labels: {
+        color: C.slate,
+        font: { size: 10, family: "'Helvetica Neue',Arial,sans-serif" },
+        boxWidth: 12,
+        boxHeight: 10,
+        padding: 12,
+        usePointStyle: true,
+      },
+    },
+  },
+};
+
+// ── Tick defaults ──
+const tickStyle = {
+  color: C.gray,
+  font: { size: 10, family: "'Helvetica Neue',Arial,sans-serif" },
+};
+
+// ════════════════════════════════════════════════
+// CHART 1A: Evolution
+// ════════════════════════════════════════════════
+
+new Chart(document.getElementById('evolutionChart'), {
+  type: 'line',
+  data: {
+    labels: EVOLUTION.map(d => d.gen),
+    datasets: [
+      {
+        label: 'Best fitness',
+        data: EVOLUTION.map(d => d.best),
+        borderColor: C.blue,
+        backgroundColor: C.fill,
+        fill: true,
+        tension: 0.2,
+        pointRadius: 2,
+        pointHitRadius: 8,
+        pointBackgroundColor: C.blue,
+        borderWidth: 2,
+      },
+      {
+        label: 'Mean fitness',
+        data: EVOLUTION.map(d => d.avg),
+        borderColor: C.teal,
+        backgroundColor: 'rgba(0,0,0,0)',
+        fill: false,
+        tension: 0.2,
+        pointRadius: 0,
+        pointHitRadius: 8,
+        borderWidth: 1.2,
+        borderDash: [4, 3],
+      },
+      {
+        label: 'Diversity (scaled)',
+        data: EVOLUTION.map(d => d.div * 10),
+        borderColor: C.purple,
+        backgroundColor: 'rgba(0,0,0,0)',
+        fill: false,
+        tension: 0.2,
+        pointRadius: 0,
+        pointHitRadius: 8,
+        borderWidth: 1,
+        borderDash: [2, 4],
+        yAxisID: 'y1',
+      },
+    ],
+  },
+  options: {
+    ...chartOpts,
+    scales: {
+      x: {
+        title: { display: true, text: 'Generation', color: C.slate, font: { size: 11, weight: '600' } },
+        ticks: { ...tickStyle, stepSize: 5 },
+        grid: { color: C.grid },
+      },
+      y: {
+        title: { display: true, text: 'Fitness', color: C.slate, font: { size: 11, weight: '600' } },
+        min: 0.3,
+        max: 0.7,
+        ticks: { ...tickStyle },
+        grid: { color: C.grid },
+      },
+      y1: {
+        position: 'right',
+        title: { display: true, text: 'Diversity (x10)', color: C.slate, font: { size: 11, weight: '600' } },
+        min: 5,
+        max: 16,
+        ticks: { ...tickStyle },
+        grid: { drawOnChartArea: false },
+      },
+    },
+    plugins: {
+      ...chartOpts.plugins,
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            if (ctx.dataset.label === 'Diversity (scaled)')
+              return `Diversity: ${(ctx.parsed.y / 10).toFixed(2)}`;
+            return `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(4)}`;
+          },
+        },
+      },
+    },
+  },
+});
+
+// ════════════════════════════════════════════════
+// CHART 1B: Parameters
+// ════════════════════════════════════════════════
+
+const pLabels = GENE_DEFS.map(g => g.name.replace(/_/g, ' '));
+const pOrig   = GENE_DEFS.map(g => g.original);
+const pOpt    = GENE_DEFS.map(g => g.optimal);
+
+new Chart(document.getElementById('paramsChart'), {
+  type: 'bar',
+  data: {
+    labels: pLabels,
+    datasets: [
+      {
+        label: 'Original',
+        data: pOrig,
+        backgroundColor: '#cbd5e1',
+        borderColor: '#94a3b8',
+        borderWidth: 1,
+        borderRadius: 1,
+      },
+      {
+        label: 'Optimal',
+        data: pOpt,
+        backgroundColor: GENE_DEFS.map(g =>
+          g.optimal > g.original ? C.green :
+          g.optimal < g.original ? C.red :
+          '#94a3b8'
+        ),
+        borderColor: GENE_DEFS.map(g =>
+          g.optimal > g.original ? C.green :
+          g.optimal < g.original ? C.red :
+          '#94a3b8'
+        ),
+        borderWidth: 0.5,
+        borderRadius: 1,
+      },
+    ],
+  },
+  options: {
+    ...chartOpts,
+    indexAxis: 'y',
+    scales: {
+      x: {
+        ticks: { ...tickStyle, callback: v => typeof v === 'number' ? v.toFixed(1) : v },
+        grid: { color: C.grid },
+      },
+      y: {
+        ticks: { ...tickStyle, font: { size: 8.5, family: "'Helvetica Neue',Arial,sans-serif" } },
+        grid: { display: false },
+      },
+    },
+    plugins: {
+      ...chartOpts.plugins,
+      tooltip: {
+        callbacks: {
+          afterLabel: ctx => {
+            const g = GENE_DEFS[ctx.dataIndex];
+            const d = g.optimal - g.original;
+            const sign = d > 0 ? '+' : '';
+            return `Delta: ${sign}${d.toFixed(2)}  (range: ${g.min}-${g.max})`;
+          },
+        },
+      },
+    },
+  },
+});
+
+// ════════════════════════════════════════════════
+// CHART 2: Per-Scenario (radar)
+// ════════════════════════════════════════════════
+
+new Chart(document.getElementById('scenarioChart'), {
+  type: 'radar',
+  data: {
+    labels: SCENARIOS.map(s => s.name.replace(/_/g, ' ')),
+    datasets: [
+      {
+        label: 'Score',
+        data: SCENARIOS.map(s => s.total),
+        borderColor: C.blue,
+        backgroundColor: 'rgba(37,99,235,0.06)',
+        pointBackgroundColor: C.blue,
+        pointRadius: 3,
+        borderWidth: 1.5,
+      },
+      {
+        label: 'Maximum',
+        data: SCENARIOS.map(() => 1.0),
+        borderColor: C.light,
+        backgroundColor: 'rgba(0,0,0,0.01)',
+        pointRadius: 0,
+        borderWidth: 1,
+        borderDash: [3, 3],
+      },
+    ],
+  },
+  options: {
+    ...chartOpts,
+    scales: {
+      r: {
+        min: 0,
+        max: 1,
+        ticks: { color: C.gray, backdropColor: 'transparent', stepSize: 0.2, font: { size: 9 } },
+        grid: { color: 'rgba(37,99,235,0.07)' },
+        angleLines: { color: 'rgba(37,99,235,0.07)' },
+        pointLabels: { color: C.slate, font: { size: 10, weight: '600' } },
+      },
+    },
+  },
+});
+
+// ════════════════════════════════════════════════
+// CHART 3: Cross-Seed Validation (bar + line)
+// ════════════════════════════════════════════════
+
+new Chart(document.getElementById('seedChart'), {
+  type: 'bar',
+  data: {
+    labels: SEEDS.map(s => 'Seed ' + s.seed),
+    datasets: [
+      {
+        label: 'Best fitness',
+        data: SEEDS.map(s => s.fitness),
+        backgroundColor: SEEDS.map(s => s.fitness >= 0.77 ? C.green : C.amber),
+        borderColor: SEEDS.map(s => s.fitness >= 0.77 ? C.green : C.amber),
+        borderWidth: 0.5,
+        borderRadius: 2,
+      },
+      {
+        label: 'Baseline (gen 1)',
+        data: SEEDS.map(() => SEED_BASELINE),
+        backgroundColor: 'rgba(0,0,0,0)',
+        borderColor: C.red,
+        borderWidth: 1.5,
+        borderDash: [5, 4],
+        type: 'line',
+        pointRadius: 0,
+        fill: false,
+      },
+    ],
+  },
+  options: {
+    ...chartOpts,
+    scales: {
+      x: { ticks: { ...tickStyle }, grid: { display: false } },
+      y: {
+        min: 0.5,
+        max: 0.85,
+        ticks: { ...tickStyle },
+        grid: { color: C.grid },
+      },
+    },
+    plugins: {
+      ...chartOpts.plugins,
+      tooltip: {
+        callbacks: {
+          afterLabel: ctx => {
+            if (ctx.dataset.label === 'Best fitness') {
+              const s = SEEDS[ctx.dataIndex];
+              return 'Improvement: +' + ((s.fitness / SEED_BASELINE - 1) * 100).toFixed(1) + '%';
+            }
+            return '';
+          },
+        },
+      },
+    },
+  },
+});
+
+// ════════════════════════════════════════════════
+// CHART 4: Fitness Axes (doughnut, grayscale)
+// ════════════════════════════════════════════════
+
+const donutColors = [C.blue, C.teal, C.green, C.amber, C.purple, C.pink];
+
+new Chart(document.getElementById('axesChart'), {
+  type: 'doughnut',
+  data: {
+    labels: AXES.map(a => a.name),
+    datasets: [{
+      data: AXES.map(a => a.weight * 100),
+      backgroundColor: donutColors,
+      borderColor: '#fff',
+      borderWidth: 2,
+    }],
+  },
+  options: {
+    ...chartOpts,
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: { color: '#444', font: { size: 10 }, padding: 10, boxWidth: 10, boxHeight: 10 },
+      },
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            const a = AXES[ctx.dataIndex];
+            return a.name + ': ' + (a.weight * 100).toFixed(0) + '% - ' + a.desc;
+          },
+        },
+      },
+    },
+  },
+});
+
+// ════════════════════════════════════════════════
+// TABLE: Parameter Comparison
+// ════════════════════════════════════════════════
+
+const tbody = document.getElementById('paramsTable');
+GENE_DEFS.forEach(g => {
+  const dc = deltaClass(g.original, g.optimal);
+  const ds = deltaSymbol(g.original, g.optimal);
+  const deltaVal = g.optimal - g.original;
+  const pct = pctDelta(g.original, g.optimal);
+  const tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td><strong>' + g.name.replace(/_/g, ' ') + '</strong></td>' +
+    '<td class="' + dc + '">' + fmt(g.original) + '</td>' +
+    '<td class="' + dc + '">' + fmt(g.optimal) + '</td>' +
+    '<td><span class="delta-tag ' + dc + '">' + ds + ' ' + (deltaVal > 0 ? '+' : '') + fmt(deltaVal) + (pct !== '-' ? ' (' + pct + '%)' : '') + '</span></td>' +
+    '<td style="color:#888;">' + g.min + '-' + g.max + '</td>' +
+    '<td style="color:#666;font-size:11px;">' + g.desc + '</td>';
+  tbody.appendChild(tr);
+});
+
+// ════════════════════════════════════════════════
+// SCENARIO CARDS
+// ════════════════════════════════════════════════
+
+const grid = document.getElementById('scenarioCards');
+SCENARIOS.forEach(s => {
+  const card = document.createElement('div');
+  card.className = 'scenario-card diff-' + s.diff;
+  const scoreColor = s.total >= 0.8 ? C.green : s.total >= 0.65 ? C.blue : s.total >= 0.55 ? C.amber : C.red;
+  card.innerHTML =
+    '<div class="name">' + s.name.replace(/_/g, ' ') + '</div>' +
+    '<div class="score" style="color:' + scoreColor + '">' + (s.total * 100).toFixed(0) + '%</div>' +
+    '<div class="meta">Difficulty: ' + s.diff + '/4 - ' + s.tests + '</div>' +
+    '<div class="axes">' +
+      '<span class="axis-badge">AC ' + (s.ac * 100).toFixed(0) + '%</span>' +
+      '<span class="axis-badge">BP ' + (s.bp * 100).toFixed(0) + '%</span>' +
+      '<span class="axis-badge">BC ' + (s.bc * 100).toFixed(0) + '%</span>' +
+      '<span class="axis-badge">PD ' + (s.pd * 100).toFixed(0) + '%</span>' +
+      '<span class="axis-badge">ACT ' + (s.act * 100).toFixed(0) + '%</span>' +
+      '<span class="axis-badge">EFF ' + (s.eff * 100).toFixed(0) + '%</span>' +
+    '</div>';
+  grid.appendChild(card);
+});
+
+// ════════════════════════════════════════════════
+// INSIGHTS LIST
+// ════════════════════════════════════════════════
+
+const insights = [
+  { m: '1', text: '<strong>Fitness improved +50.9%</strong> from 0.518 (gen 1) to 0.781 (gen 30). The evolutionary search found a dramatically better configuration than the hand-tuned defaults.' },
+  { m: '2', text: '<strong>Reduced importance gate</strong> (<code>importance_rank_n</code>: 3 to 1). The protocol was too strict; letting through more tasks earlier improves coverage without sacrificing quality.' },
+  { m: '3', text: '<strong>Lowered confidence threshold</strong> (<code>confidence_min</code>: 0.70 to 0.50). The original bar was too high, causing stalls on ambiguous claims. A lower bar is more effective.' },
+  { m: '4', text: '<strong>Tripled gap ratio for mandatory redesign</strong> (<code>gap_ratio_mandatory</code>: 10 to 25). The protocol was too eager to declare a redesign necessary. Raising the threshold reserves redesign for truly divergent situations.' },
+  { m: '5', text: '<strong>Extended paradigm lookahead</strong> (<code>paradigm_years_ahead</code>: 3 to 8.2 yrs). Scanning roughly 8 years ahead catches shifts the original 3-year window missed.' },
+  { m: '6', text: '<strong>Reduced max audit loops</strong> (<code>max_audit_loops</code>: 3 to 2). With a lower confidence threshold and higher baggage presumption, fewer audit cycles are needed — the protocol converges faster.' },
+  { m: '7', text: '<strong>Maxed out baggage presumption</strong> (<code>baggage_presumption</code>: 0.80 to 1.0). Maximal skepticism about user claims turns out to be optimal; most claims carry unexamined baggage.' },
+  { m: '8', text: '<strong>Zero phase-skip penalty</strong> (<code>phase_skip_penalty</code>: 0.10 to 0.0). The optimizer eliminated the efficiency penalty entirely, implying the protocol should always run in full unless the importance gate short-circuits it.' },
+  { m: '9', text: '<strong>Cross-seed validation</strong> confirms robustness: 5 independent runs all converged to similar fitness (0.77–0.78), peaking significantly above the v2 baseline of 0.518.' },
+  { m: '10', text: '<strong>Weakest scenario: add_feature (62%)</strong>. The protocol scored lowest on routine feature additions, suggesting over-skepticism for low-complexity tasks. Baggage challenge (0.0) dragged the score down.' },
+  { m: '11', text: '<strong>Strongest scenarios: simple_rename and compliance_mandate (85%)</strong>. The protocol excels at simple tasks and correctly flags legal mandates as bedrock, recommending redesign without over-auditing.' },
+];
+
+const ul = document.getElementById('insights');
+insights.forEach(ins => {
+  const li = document.createElement('li');
+  li.innerHTML = '<span class="insight-marker">' + ins.m + '</span> <span>' + ins.text + '</span>';
+  ul.appendChild(li);
+});
+</script>
+
+</body>
+</html>

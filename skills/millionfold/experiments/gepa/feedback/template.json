@@ -1,0 +1,38 @@
+{
+  "task_id": "describe-the-task-briefly",
+  "complexity": 3,
+  "date": "2026-07-03",
+  "agent_session": "zero_<session_id>",
+  "skill_used": "millionfold-evolved",
+
+  "protocol_execution": [
+    {"phase": -1, "time_s": 15, "notes": "Importance gate — task top-1?"},
+    {"phase": 0,  "time_s": 30, "notes": "Terminology lock — claims challenged"},
+    {"phase": 1,  "time_s": 60, "notes": "Assumptions extracted"},
+    {"phase": 2,  "time_s": 20, "notes": "Paradigm shift check"},
+    {"phase": 5,  "time_s": 10, "notes": "Redesign decision"}
+  ],
+
+  "outcome_metrics": {
+    "was_protocol_helpful": true,
+    "would_use_again": true,
+    "overall_usefulness": 4,
+
+    "hidden_assumptions_caught": 3,
+    "hidden_assumptions_missed": 0,
+    "baggage_flags_correct": 2,
+    "baggage_flags_false": 0,
+    "total_bedrocks": 1,
+    "total_baggage_claims": 2,
+    "paradigm_shift_found": false,
+    "paradigm_shift_missed": false,
+    "action_recommendation": "iterate",
+    "action_was_correct": true,
+    "efficiency_score": 0.8,
+    "user_claims": ["We can't change X", "Standard practice is Y"],
+
+    "what_worked": "Caught assumptions I would have missed",
+    "what_didnt": "Paradigm shift check was overkill for a simple task",
+    "suggestions": "Auto-skip paradigm check for complexity <= 2"
+  }
+}

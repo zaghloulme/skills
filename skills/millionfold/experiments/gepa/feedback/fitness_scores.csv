@@ -1,0 +1,2 @@
+task_id,complexity,date,assumption_coverage,bedrock_preservation,baggage_challenge_rate,paradigm_detected,action_correctness,efficiency,overall_usefulness,weighted_total
+refactor-monolith-auth-to-service,4,2026-07-03,1.0,0.5,1.0,0.5,1.0,0.75,1.0,0.825
