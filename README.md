@@ -45,6 +45,7 @@ To update later, run `npx skills@latest update`.
 
 | Skill | What it does |
 | --- | --- |
+| [`walkthrough`](skills/walkthrough/SKILL.md) | Review or improve a user flow by replaying a realistic task and verifying the outcome. |
 | [`dithered-visuals`](skills/dithered-visuals/SKILL.md) | Generate composition-ready imagery and transform it into restrained two-color Bayer 4×4 dither artwork. |
 
 ## Repository layout
